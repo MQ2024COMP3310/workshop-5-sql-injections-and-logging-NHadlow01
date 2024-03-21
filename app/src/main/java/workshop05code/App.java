@@ -56,38 +56,39 @@ public class App {
             String line;
             int i = 1;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
-                wordleDatabaseConnection.addValidWord(i, line);
+                try {
+                    wordleDatabaseConnection.addValidWord(i, line);
+                    logger.log(Level.INFO, "Valid word added: " + line); // Log valid words
+                } catch (InvalidWordException e) { // Assuming InvalidWordException is thrown for invalid words
+                    logger.log(Level.SEVERE, "Invalid word in data.txt: " + line); // Log invalid words at severe level
+                }
                 i++;
             }
-
         } catch (IOException e) {
-            System.out.println("Not able to load . Sorry!");
-            System.out.println(e.getMessage());
-            return;
+            logger.log(Level.WARNING, "Not able to load data.txt.", e);
         }
+        
 
         // let's get them to enter a word
 
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Enter a 4 letter word for a guess or q to quit: ");
-            String guess = scanner.nextLine();
-
-            while (!guess.equals("q")) {
-                System.out.println("You've guessed '" + guess+"'.");
-
-                if (wordleDatabaseConnection.isValidWord(guess)) { 
-                    System.out.println("Success! It is in the the list.\n");
-                }else{
-                    System.out.println("Sorry. This word is NOT in the the list.\n");
-                }
-
-                System.out.print("Enter a 4 letter word for a guess or q to quit: " );
+            String guess;
+            while (true) {
+                System.out.print("Enter a 4 letter word for a guess or q to quit: ");
                 guess = scanner.nextLine();
+                if (guess.equals("q")) break;
+        
+                if (wordleDatabaseConnection.isValidWord(guess)) {
+                    System.out.println("Success! It is in the the list.\n");
+                } else {
+                    System.out.println("Sorry. This word is NOT in the list.\n");
+                    logger.log(Level.INFO, "Invalid guess: " + guess); // Log invalid guess
+                }
             }
         } catch (NoSuchElementException | IllegalStateException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Scanner error", e);
         }
+        
 
     }
 }
